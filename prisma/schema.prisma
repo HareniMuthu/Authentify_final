@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Define the database provider and connection URL (read from .env)
+datasource db {
+  provider = "mongodb" // Make sure this matches your DATABASE_URL in .env
+  url      = env("DATABASE_URL")
+}
+
+// Define the generator for the Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Define the model for your blockchain ledger table
+model BlockchainLedger {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  timestamp            BigInt
+  product_details_hash String   // Hash of the original product details
+  encrypted_data_salt  String   @unique // Salt from the encrypted data, uniquely identifies the item
+  signature            String   // Signature generated for the item
+  previous_block_hash  String
+  nonce                Int      // Nonce found during mining
+  current_block_hash   String   @unique // Hash of this block
+
+  // --- Raw Product Details ---
+  productName          String
+  sku                  String
+  batch                String
+  manufactureDate      String   // Storing as String, consider DateTime if specific querying is needed
+  quantity             String   // Storing as String, consider Int/Float if numeric operations are needed
+  destinationShop      String
+
+  // --- Verification Status Fields ---
+  isVerified           Boolean  @default(false)
+  verifiedAt           DateTime?
+
+  createdAt            DateTime @default(now())
+
+  // Optional indexes
+  // @@index([encrypted_data_salt])
+  // @@index([productName]) // Example: if you want to query by product name
+}
+
